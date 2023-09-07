@@ -7,14 +7,14 @@ export default function Home() {
     <div className={styles.container}>
       <Head>
         <title>joepowers.dev</title>
-        <link rel="icon" href="/favicon.ico" />
+        <link rel="icon" href="/confused-emote-no-bkgd.png" />
       </Head>
 
       <main>
         <h1 className={styles.title}>
           Welcome to <a href="/">here.</a>
           <img
-            src="/confused-emote.png"
+            src="/confused-emote-no-bkgd.png"
             alt="my confused face"
             width="80"
             height="80"

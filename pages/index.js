@@ -13,14 +13,18 @@ export default function Home() {
       <main>
         <h1 className={styles.title}>
           Welcome to <a href="/">here.</a>
+          <img
+            src="/confused-emote.png"
+            alt="my confused face"
+            width="80"
+            height="80"
+          />
         </h1>
-
         <p className={styles.description}>
           One day I'm gonna do some <code>coding</code> here
         </p>
         <br />
         <p className={styles.description}>For now, here are some projects:</p>
-
         <div className={styles.grid}>
           <a
             href="https://branch-out-gvl.herokuapp.com/"
@@ -33,7 +37,6 @@ export default function Home() {
             <br />
             <p> Which is very based.</p>
           </a>
-
           <a
             href="https://main.d3oydlksdz52ep.amplifyapp.com/stats"
             className={styles.card}
@@ -48,35 +51,34 @@ export default function Home() {
             <p>Niche like a quiche.</p>
           </a>
         </div>
+
+        <p className={styles.description}>Non-coding things:</p>
+        <div className={styles.grid}>
+          <iframe
+            src="https://www.youtube.com/embed/o2droJZTYYw?si=l2rr9O9dkhMo0tUb"
+            frameborder="0"
+            style={{
+              width: "90%",
+              height: "352px",
+              border: "0",
+              margin: "10px",
+              borderRadius: "10px",
+            }}
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+            allowfullscreen
+          />
+          <iframe
+            style={{
+              width: "90%",
+              height: "352px",
+              border: "0",
+              margin: "10px",
+            }}
+            src="https://open.spotify.com/embed/artist/4m3Bhxg7otGtBF7xsfTQTV?utm_source=generator"
+            loading="lazy"
+          />
+        </div>
       </main>
-
-      <p className={styles.description}>Non-coding things:</p>
-
-      <h3>Wolfgang Wallace</h3>
-      <div>
-        <iframe
-          src="https://www.youtube.com/embed/o2droJZTYYw?si=l2rr9O9dkhMo0tUb"
-          frameborder="0"
-          style={{
-            width: "100%",
-            height: "352px",
-            border: "0",
-            margin: "10px",
-          }}
-          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-          allowfullscreen
-        />
-        <iframe
-          style={{
-            width: "100%",
-            height: "352px",
-            border: "0",
-            margin: "10px",
-          }}
-          src="https://open.spotify.com/embed/artist/4m3Bhxg7otGtBF7xsfTQTV?utm_source=generator"
-          loading="lazy"
-        />
-      </div>
       <footer>
         Made by Joe Powers{" "}
         <a

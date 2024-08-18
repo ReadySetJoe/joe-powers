@@ -1,5 +1,36 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+
+:root {
+  --background-color: #f0f0f0;
+  --border-color: #d0d0d0;
+  --hover-background-color: #e0e0e0;
+}
+
+/* Dark mode variables */
+:global(.dark) {
+  --background-color: #333;
+  --border-color: #555;
+  --hover-background-color: #444;
+}
+
+.dark {
+  --foreground-rgb: 255, 255, 255;
+  --background-start-rgb: 0, 0, 0;
+  --background-end-rgb: 0, 0, 0;
+}
+
 html,
 body {
+  color: rgb(var(--foreground-rgb));
+  background: linear-gradient(
+      to bottom,
+      transparent,
+      rgb(var(--background-end-rgb))
+    )
+    rgb(var(--background-start-rgb));
   padding: 0;
   margin: 0;
   font-family:
@@ -18,7 +49,7 @@ body {
 }
 
 main {
-  padding: 4rem 0;
+  padding: 2rem 0;
   flex: 1;
   display: flex;
   flex-direction: column;

@@ -5,6 +5,7 @@
   flex-direction: column;
   justify-content: center;
   align-items: center;
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 .title a {
@@ -22,20 +23,13 @@
   margin: 0 0 2rem;
   line-height: 1.15;
   font-size: 4rem;
-}
-
-.title {
-  text-align: center;
-}
-
-.title,
-.description {
   text-align: center;
 }
 
 .description {
   line-height: 1.5;
   font-size: 1.5rem;
+  text-align: center;
 }
 
 .grid {
@@ -44,7 +38,7 @@
   justify-content: center;
   flex-wrap: wrap;
   max-width: 800px;
-  margin: 3rem 0;
+  margin: 2rem 0;
 }
 
 .card {
@@ -56,9 +50,7 @@
   text-decoration: none;
   border: 1px solid #eaeaea;
   border-radius: 10px;
-  transition:
-    color 0.15s ease,
-    border-color 0.15s ease;
+  transition: color 0.15s ease, border-color 0.15s ease;
 }
 
 .card:hover,
@@ -77,6 +69,83 @@
   margin: 0;
   font-size: 1.25rem;
   line-height: 1.5;
+}
+
+.footer {
+  width: 100%;
+  height: 100px;
+  border-top: 1px solid #eaeaea;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  transition: border-color 0.3s ease;
+}
+
+.footerIcon {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-left: 0.5rem;
+  color: #000; /* Default color for light mode */
+  transition: color 0.3s ease;
+}
+
+.footerIcon:hover {
+  color: #0070f3; /* Hover color for light mode */
+}
+
+/* Dark mode styles */
+:global(.dark) .container {
+  background-color: #1a1a1a;
+  color: #ffffff;
+}
+
+:global(.dark) .card {
+  border-color: #333;
+}
+
+:global(.dark) .card:hover,
+:global(.dark) .card:focus,
+:global(.dark) .card:active {
+  color: #00a0ff;
+  border-color: #00a0ff;
+}
+
+:global(.dark) .footer {
+  border-color: #333;
+}
+
+:global(.dark) .footerIcon {
+  color: #fff; /* Icon color for dark mode */
+}
+
+:global(.dark) .footerIcon:hover {
+  color: #00a0ff; /* Hover color for dark mode */
+}
+
+.darkModeToggle {
+  position: fixed;
+  top: 1rem;
+  right: 1rem;
+  padding: 0.5rem;
+  background-color: var(--background-color);
+  border: 1px solid var(--border-color);
+  border-radius: 50%;
+  cursor: pointer;
+  transition: background-color 0.3s ease, border-color 0.3s ease;
+  z-index: 1000;
+}
+
+.darkModeToggle:hover {
+  background-color: var(--hover-background-color);
+}
+
+/* Mobile styles */
+@media (max-width: 768px) {
+  .darkModeToggleMobile {
+    top: auto;
+    bottom: 1rem;
+  }
 }
 
 .logo {

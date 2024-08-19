@@ -1,10 +1,32 @@
+import { Filter } from "bad-words";
 import Head from "next/head";
+import Image from "next/image";
 import { useEffect, useState } from "react";
 import DarkModeToggle from "../components/dark-mode-toggle";
 import styles from "../styles/Home.module.css";
 
+const filter = new Filter();
+
+const randomInitialInputValues = [
+  "coding",
+  "gaming",
+  "music",
+  "actual work",
+  "cleanup",
+  "coding",
+  "coding",
+  "coding",
+  "coding",
+  "coding",
+];
+
 export default function Home() {
   const [darkMode, setDarkMode] = useState(true);
+  const [inputValue, setInputValue] = useState(
+    randomInitialInputValues[
+      Math.floor(Math.random() * randomInitialInputValues.length)
+    ]
+  );
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -32,31 +54,61 @@ export default function Home() {
         <DarkModeToggle darkMode={darkMode} toggleDarkMode={toggleDarkMode} />
         <h1 className={styles.title}>
           Welcome to <a href="/">here.</a>
-          <img
+        </h1>
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "row",
+            justifyContent: "center",
+            alignItems: "center",
+          }}
+        >
+          <p className={styles.description}>
+            I'm Joe Powers, a full-stack developer. This is me:
+          </p>
+          <Image
             src="/confused-emote-no-bkgd.png"
             alt="my confused face"
-            width="80"
-            height="80"
-            style={{ paddingLeft: "10px" }}
+            onClick={() => {
+              alert("ouch, that's my face!");
+            }}
+            width={50}
+            height={50}
           />
-        </h1>
-        <p className={styles.description}>
-          One day I'm gonna do some{" "}
-          <code style={{ color: "black" }}>
-            {darkMode ? "nonsense" : "coding"}
-          </code>{" "}
-          here
-        </p>
-        <br />
+        </div>
         <a
           href="/resume"
           className={styles.card}
           target="_blank"
           rel="noopener noreferrer"
+          style={{ marginBottom: "60px" }}
         >
           <h3>Resume</h3>
           <p>For the professional types.</p>
         </a>
+        <p className={styles.description}>
+          One day I'm gonna do some{" "}
+          <code style={{ color: "black" }}>
+            <input
+              type="text"
+              value={inputValue}
+              style={{
+                backgroundColor: "transparent",
+                border: "none",
+                color: "inherit",
+              }}
+              onChange={e => {
+                const cleanValue = filter.clean(e.target.value);
+                if (cleanValue.includes("*")) {
+                  alert("No bad words allowed!");
+                }
+                setInputValue(filter.clean(e.target.value));
+              }}
+            />
+          </code>{" "}
+          with this site.
+        </p>
+        <br />
         <p className={styles.description}>For now, here are some projects:</p>
         <div className={styles.grid}>
           <a

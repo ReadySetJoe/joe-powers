@@ -169,7 +169,6 @@ export default function Home() {
         <div className={styles.grid}>
           <iframe
             src="https://www.youtube.com/embed/o2droJZTYYw?si=l2rr9O9dkhMo0tUb"
-            frameborder="0"
             style={{
               width: "90%",
               height: "352px",
@@ -178,7 +177,7 @@ export default function Home() {
               borderRadius: "10px",
             }}
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-            allowfullscreen
+            allowFullScreen
           />
           <iframe
             style={{

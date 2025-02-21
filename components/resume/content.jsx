@@ -44,9 +44,9 @@ export const content = {
       dates: "June 2022 - Present",
       responsibilities: [
         "Working to innovate and improve access to mental healthcare through technology.",
+        "Implementing A/B testing framework and working with business intelligence team to decrease patient acquisition cost by 12.4% in 2024.",
         "Collaborating cross-functionally with psychiatrists and product teams to create tools that enhance patient care and streamline clinical workflows.",
-        "Implementing A/B testing framework and working with business intelligence team to decrease patient acquisition cost.",
-        "Implementing automated testing and continuous integration to ensure reliable software delivery.",
+        "Supporting automated testing and continuous integration to ensure reliable software delivery.",
         "Mentoring junior developers through pair programming and code reviews.",
       ],
       techStack: "NextJS, React, Node.js, GraphQL, PostgreSQL, AWS",

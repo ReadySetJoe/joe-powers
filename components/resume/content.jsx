@@ -124,7 +124,7 @@ export const content = {
     },
     {
       name: "branch.out",
-      url: "https://branch-out-gvl.herokuapp.com",
+      url: "https://branchout.live",
       description:
         "Uses Spotify data to find upcoming concerts in the user's area.",
     },

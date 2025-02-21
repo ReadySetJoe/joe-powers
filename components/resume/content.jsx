@@ -77,27 +77,15 @@ export const content = {
   skills: [
     {
       label: "Frontend",
-      values: [
-        "React",
-        "NextJS",
-        "JavaScript/TypeScript",
-        "HTML5/CSS3",
-        "Material UI",
-      ],
+      values: ["React", "NextJS", "JavaScript/TypeScript", "HTML5/CSS3", "MUI"],
     },
     {
       label: "Backend",
-      values: ["Node.js", "GraphQL", "RESTful APIs", "Django", "Python"],
+      values: ["Node.js", "GraphQL", "RESTful API", "Django", "Python"],
     },
     {
       label: "Database & Cloud",
-      values: [
-        "PostgreSQL",
-        "MongoDB",
-        "AWS (S3, Amplify)",
-        "Heroku",
-        "Vercel",
-      ],
+      values: ["PostgreSQL", "MongoDB", "AWS", "Heroku", "Vercel"],
     },
     {
       label: "DevOps & Tools",
@@ -105,7 +93,7 @@ export const content = {
         "Git/GitHub",
         "Docker",
         "ArgoCD",
-        "CI/CD pipelines",
+        "CI/CD",
         "AI (Copilot, Claude, GPT, Huggingface)",
       ],
     },

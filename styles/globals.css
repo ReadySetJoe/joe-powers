@@ -127,14 +127,26 @@ button {
   padding: 0.5rem 1rem;
   font-weight: bold;
 }
-
 .secret-text {
   position: absolute;
-  left: -9999px;
-  width: 1px;
-  height: 1px;
+  font-size: 5px;
   overflow: hidden;
-  opacity: 0;
+  opacity: 0.05;
+  -webkit-user-select: text;
+  -moz-user-select: text;
   user-select: text;
   pointer-events: none;
+}
+@media print {
+  body {
+    margin: 0;
+    padding: 0;
+  }
+  .max-width-letter {
+    max-width: none;
+  }
+  @page {
+    size: letter;
+    margin: 0.5in;
+  }
 }

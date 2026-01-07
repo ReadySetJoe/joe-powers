@@ -1,8 +1,9 @@
 import Head from "next/head";
-import Link from "next/link";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import DarkModeToggle from "../../components/dark-mode-toggle";
+import { BackToGamesLink, GameCanvas, ResultOverlay, ActionButtons, GameButton } from "../../components/game";
 import styles from "../../styles/Home.module.css";
+import { useDarkMode, getCanvasCoords, useGameLoop } from "../../lib/gameHooks";
 import {
   physicsStep,
   checkBucketCollision,
@@ -11,6 +12,9 @@ import {
   drawBall,
   drawBucket,
   drawBackground,
+  drawBallStartMarker,
+  drawObstacles,
+  drawGameText,
   createBall,
   resetBall,
 } from "../../lib/ballPhysics";
@@ -20,65 +24,27 @@ const BUCKET_WIDTH = 90;
 const BUCKET_HEIGHT = 55;
 const FAN_EFFECT_RADIUS = 150;
 const MAX_FAN_POWER = 1.5;
-
-const PHYSICS = {
-  gravity: 0,
-  frictionX: 0.995,
-  frictionY: 0.995,
-};
+const PHYSICS = { gravity: 0, frictionX: 0.995, frictionY: 0.995 };
 
 export default function FanZone() {
-  const [darkMode, setDarkMode] = useState(true);
-  const [gameState, setGameState] = useState("placing"); // placing, simulating, scored
+  const [darkMode, toggleDarkMode] = useDarkMode();
+  const [gameState, setGameState] = useState("placing");
   const [score, setScore] = useState(0);
   const [level, setLevel] = useState(1);
 
   const canvasRef = useRef(null);
-  const animationRef = useRef(null);
-
-  // Ball state
   const ballRef = useRef(createBall(0, 0));
-
-  // Fans array: { x, y, dirX, dirY, power }
   const fansRef = useRef([]);
-
-  // Current fan being placed
   const placingRef = useRef({ isPlacing: false, startX: 0, startY: 0, endX: 0, endY: 0 });
-
-  // Level data
   const levelRef = useRef({ ballStart: { x: 0, y: 0 }, bucket: { x: 0, y: 0 }, obstacles: [] });
-
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      const isDarkMode = localStorage.getItem("darkMode") === "true";
-      setDarkMode(isDarkMode);
-    }
-  }, []);
-
-  useEffect(() => {
-    document.body.classList.toggle("dark", darkMode);
-    localStorage.setItem("darkMode", darkMode);
-  }, [darkMode]);
-
-  const toggleDarkMode = () => setDarkMode(!darkMode);
 
   const generateLevel = useCallback((levelNum) => {
     const width = window.innerWidth;
     const height = window.innerHeight;
 
-    // Ball starts top-left
-    const ballStart = {
-      x: 80 + Math.random() * 80,
-      y: 80,
-    };
+    const ballStart = { x: 80 + Math.random() * 80, y: 80 };
+    const bucket = { x: width - 150 - Math.random() * 100, y: height - 100 };
 
-    // Bucket bottom-right
-    const bucket = {
-      x: width - 150 - Math.random() * 100,
-      y: height - 100,
-    };
-
-    // Generate obstacles based on level
     const obstacles = [];
     const numObstacles = Math.min(2 + levelNum, 8);
 
@@ -87,8 +53,7 @@ export default function FanZone() {
       const obstacleWidth = isHorizontal ? 80 + Math.random() * 120 : 25;
       const obstacleHeight = isHorizontal ? 25 : 80 + Math.random() * 120;
 
-      let x, y;
-      let attempts = 0;
+      let x, y, attempts = 0;
       do {
         x = 100 + Math.random() * (width - 250);
         y = 150 + Math.random() * (height - 350);
@@ -108,337 +73,190 @@ export default function FanZone() {
     setGameState("placing");
   }, []);
 
-  useEffect(() => {
-    generateLevel(level);
-  }, [level, generateLevel]);
+  useState(() => generateLevel(level));
 
-  const handleMouseDown = useCallback((e) => {
+  const handlePointerDown = useCallback((e) => {
     if (gameState !== "placing") return;
-
-    const rect = canvasRef.current.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
-
-    placingRef.current = {
-      isPlacing: true,
-      startX: x,
-      startY: y,
-      endX: x,
-      endY: y,
-    };
+    const { x, y } = getCanvasCoords(e, canvasRef);
+    placingRef.current = { isPlacing: true, startX: x, startY: y, endX: x, endY: y };
   }, [gameState]);
 
-  const handleMouseMove = useCallback((e) => {
+  const handlePointerMove = useCallback((e) => {
     if (!placingRef.current.isPlacing) return;
-
-    const rect = canvasRef.current.getBoundingClientRect();
-    placingRef.current.endX = e.clientX - rect.left;
-    placingRef.current.endY = e.clientY - rect.top;
+    const { x, y } = getCanvasCoords(e, canvasRef);
+    placingRef.current.endX = x;
+    placingRef.current.endY = y;
   }, []);
 
-  const handleMouseUp = useCallback(() => {
+  const handlePointerUp = useCallback(() => {
     if (!placingRef.current.isPlacing) return;
-
     const { startX, startY, endX, endY } = placingRef.current;
-    const dx = endX - startX;
-    const dy = endY - startY;
+    const dx = endX - startX, dy = endY - startY;
     const distance = Math.sqrt(dx * dx + dy * dy);
 
-    // Only add if dragged enough
     if (distance > 20) {
       const power = Math.min(distance / 150, 1) * MAX_FAN_POWER;
-      const dirX = dx / distance;
-      const dirY = dy / distance;
-
-      fansRef.current.push({
-        x: startX,
-        y: startY,
-        dirX,
-        dirY,
-        power,
-      });
+      fansRef.current.push({ x: startX, y: startY, dirX: dx / distance, dirY: dy / distance, power });
     }
-
     placingRef.current.isPlacing = false;
   }, []);
 
-  // Touch handlers
-  const handleTouchStart = useCallback((e) => {
-    e.preventDefault();
-    const touch = e.touches[0];
-    handleMouseDown({ clientX: touch.clientX, clientY: touch.clientY });
-  }, [handleMouseDown]);
-
-  const handleTouchMove = useCallback((e) => {
-    e.preventDefault();
-    const touch = e.touches[0];
-    handleMouseMove({ clientX: touch.clientX, clientY: touch.clientY });
-  }, [handleMouseMove]);
-
-  const handleTouchEnd = useCallback((e) => {
-    e.preventDefault();
-    handleMouseUp();
-  }, [handleMouseUp]);
-
   const startSimulation = useCallback(() => {
-    const { ballStart } = levelRef.current;
-    resetBall(ballRef.current, ballStart.x, ballStart.y);
+    resetBall(ballRef.current, levelRef.current.ballStart.x, levelRef.current.ballStart.y);
     setGameState("simulating");
   }, []);
 
   const resetLevel = useCallback(() => {
-    const { ballStart } = levelRef.current;
-    resetBall(ballRef.current, ballStart.x, ballStart.y);
+    resetBall(ballRef.current, levelRef.current.ballStart.x, levelRef.current.ballStart.y);
     fansRef.current = [];
     setGameState("placing");
   }, []);
 
   const nextLevel = useCallback(() => {
-    setLevel(l => l + 1);
-  }, []);
+    setLevel(l => { generateLevel(l + 1); return l + 1; });
+  }, [generateLevel]);
 
-  // Game loop
-  useEffect(() => {
-    if (!canvasRef.current) return;
+  const render = useCallback((ctx, width, height) => {
+    const ball = ballRef.current;
+    const fans = fansRef.current;
+    const placing = placingRef.current;
+    const { ballStart, bucket, obstacles } = levelRef.current;
 
-    const canvas = canvasRef.current;
-    const ctx = canvas.getContext("2d");
-
-    const render = () => {
-      const width = window.innerWidth;
-      const height = window.innerHeight;
-      canvas.width = width;
-      canvas.height = height;
-
-      const ball = ballRef.current;
-      const fans = fansRef.current;
-      const placing = placingRef.current;
-      const { ballStart, bucket, obstacles } = levelRef.current;
-
-      // Physics when simulating
-      if (gameState === "simulating") {
-        // Apply fan forces
-        for (const fan of fans) {
-          const dx = ball.x - fan.x;
-          const dy = ball.y - fan.y;
-          const dist = Math.sqrt(dx * dx + dy * dy);
-
-          if (dist < FAN_EFFECT_RADIUS) {
-            // Force decreases with distance
-            const strength = (1 - dist / FAN_EFFECT_RADIUS) * fan.power;
-            ball.vx += fan.dirX * strength;
-            ball.vy += fan.dirY * strength;
-          }
-        }
-
-        physicsStep(ball, PHYSICS);
-
-        // Wall collisions (all sides - ball is on a table)
-        if (ball.x - BALL_RADIUS < 0) {
-          ball.x = BALL_RADIUS;
-          ball.vx = -ball.vx * 0.6;
-        }
-        if (ball.x + BALL_RADIUS > width) {
-          ball.x = width - BALL_RADIUS;
-          ball.vx = -ball.vx * 0.6;
-        }
-        if (ball.y - BALL_RADIUS < 0) {
-          ball.y = BALL_RADIUS;
-          ball.vy = -ball.vy * 0.6;
-        }
-        if (ball.y + BALL_RADIUS > height) {
-          ball.y = height - BALL_RADIUS;
-          ball.vy = -ball.vy * 0.6;
-        }
-
-        // Obstacle collisions
-        for (const obstacle of obstacles) {
-          const collision = checkRectCollision(ball, obstacle, BALL_RADIUS);
-          if (collision) {
-            resolveRectCollision(ball, collision, BALL_RADIUS, 0.5);
-          }
-        }
-
-        // Bucket collision
-        if (checkBucketCollision(ball, bucket, BUCKET_WIDTH, BUCKET_HEIGHT)) {
-          setScore(s => s + 1);
-          setGameState("scored");
-        }
-      }
-
-      // Draw background
-      drawBackground(ctx, width, height, darkMode);
-
-      // Draw fan effect zones (during placing)
-      if (gameState === "placing") {
-        for (const fan of fans) {
-          ctx.strokeStyle = darkMode ? "rgba(100, 200, 255, 0.2)" : "rgba(0, 100, 200, 0.15)";
-          ctx.lineWidth = 1;
-          ctx.setLineDash([5, 5]);
-          ctx.beginPath();
-          ctx.arc(fan.x, fan.y, FAN_EFFECT_RADIUS, 0, Math.PI * 2);
-          ctx.stroke();
-          ctx.setLineDash([]);
-        }
-      }
-
-      // Draw obstacles
-      for (const obstacle of obstacles) {
-        ctx.fillStyle = darkMode ? "#4a5568" : "#a0aec0";
-        ctx.fillRect(obstacle.x, obstacle.y, obstacle.width, obstacle.height);
-
-        // Add some depth
-        ctx.fillStyle = darkMode ? "#3a4558" : "#8090a0";
-        ctx.fillRect(obstacle.x, obstacle.y + obstacle.height - 3, obstacle.width, 3);
-      }
-
-      // Draw fans
+    if (gameState === "simulating") {
+      // Apply fan forces
       for (const fan of fans) {
-        // Fan base
-        ctx.fillStyle = darkMode ? "#64b5f6" : "#2196f3";
+        const dx = ball.x - fan.x, dy = ball.y - fan.y;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        if (dist < FAN_EFFECT_RADIUS) {
+          const strength = (1 - dist / FAN_EFFECT_RADIUS) * fan.power;
+          ball.vx += fan.dirX * strength;
+          ball.vy += fan.dirY * strength;
+        }
+      }
+
+      physicsStep(ball, PHYSICS);
+
+      // Wall collisions (all sides - ball is on a table)
+      if (ball.x - BALL_RADIUS < 0) { ball.x = BALL_RADIUS; ball.vx = -ball.vx * 0.6; }
+      if (ball.x + BALL_RADIUS > width) { ball.x = width - BALL_RADIUS; ball.vx = -ball.vx * 0.6; }
+      if (ball.y - BALL_RADIUS < 0) { ball.y = BALL_RADIUS; ball.vy = -ball.vy * 0.6; }
+      if (ball.y + BALL_RADIUS > height) { ball.y = height - BALL_RADIUS; ball.vy = -ball.vy * 0.6; }
+
+      for (const obstacle of obstacles) {
+        const collision = checkRectCollision(ball, obstacle, BALL_RADIUS);
+        if (collision) resolveRectCollision(ball, collision, BALL_RADIUS, 0.5);
+      }
+
+      if (checkBucketCollision(ball, bucket, BUCKET_WIDTH, BUCKET_HEIGHT)) {
+        setScore(s => s + 1);
+        setGameState("scored");
+      }
+    }
+
+    drawBackground(ctx, width, height, darkMode);
+
+    // Fan effect zones
+    if (gameState === "placing") {
+      for (const fan of fans) {
+        ctx.strokeStyle = darkMode ? "rgba(100, 200, 255, 0.2)" : "rgba(0, 100, 200, 0.15)";
+        ctx.lineWidth = 1;
+        ctx.setLineDash([5, 5]);
         ctx.beginPath();
-        ctx.arc(fan.x, fan.y, 15, 0, Math.PI * 2);
+        ctx.arc(fan.x, fan.y, FAN_EFFECT_RADIUS, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.setLineDash([]);
+      }
+    }
+
+    drawObstacles(ctx, obstacles, darkMode);
+
+    // Draw fans
+    for (const fan of fans) {
+      ctx.fillStyle = darkMode ? "#64b5f6" : "#2196f3";
+      ctx.beginPath();
+      ctx.arc(fan.x, fan.y, 15, 0, Math.PI * 2);
+      ctx.fill();
+
+      const arrowLen = 30 + fan.power * 40;
+      const endX = fan.x + fan.dirX * arrowLen, endY = fan.y + fan.dirY * arrowLen;
+      ctx.strokeStyle = darkMode ? "#90caf9" : "#1976d2";
+      ctx.lineWidth = 3;
+      ctx.lineCap = "round";
+      ctx.beginPath();
+      ctx.moveTo(fan.x, fan.y);
+      ctx.lineTo(endX, endY);
+      ctx.stroke();
+
+      const headLen = 10, angle = Math.atan2(fan.dirY, fan.dirX);
+      ctx.beginPath();
+      ctx.moveTo(endX, endY);
+      ctx.lineTo(endX - headLen * Math.cos(angle - 0.4), endY - headLen * Math.sin(angle - 0.4));
+      ctx.moveTo(endX, endY);
+      ctx.lineTo(endX - headLen * Math.cos(angle + 0.4), endY - headLen * Math.sin(angle + 0.4));
+      ctx.stroke();
+
+      // Wind effect lines during simulation
+      if (gameState === "simulating") {
+        const time = Date.now() / 100;
+        ctx.strokeStyle = darkMode ? "rgba(100, 200, 255, 0.3)" : "rgba(0, 100, 200, 0.2)";
+        ctx.lineWidth = 2;
+        for (let i = 0; i < 3; i++) {
+          const offset = ((time + i * 20) % 60);
+          ctx.beginPath();
+          ctx.moveTo(fan.x + fan.dirX * (20 + offset), fan.y + fan.dirY * (20 + offset));
+          ctx.lineTo(fan.x + fan.dirX * (35 + offset), fan.y + fan.dirY * (35 + offset));
+          ctx.stroke();
+        }
+      }
+    }
+
+    // Fan being placed
+    if (placing.isPlacing) {
+      const dx = placing.endX - placing.startX, dy = placing.endY - placing.startY;
+      const distance = Math.sqrt(dx * dx + dy * dy);
+      if (distance > 5) {
+        ctx.fillStyle = darkMode ? "rgba(100, 181, 246, 0.5)" : "rgba(33, 150, 243, 0.5)";
+        ctx.beginPath();
+        ctx.arc(placing.startX, placing.startY, 15, 0, Math.PI * 2);
         ctx.fill();
 
-        // Wind direction arrow
-        const arrowLen = 30 + fan.power * 40;
-        const endX = fan.x + fan.dirX * arrowLen;
-        const endY = fan.y + fan.dirY * arrowLen;
-
-        ctx.strokeStyle = darkMode ? "#90caf9" : "#1976d2";
-        ctx.lineWidth = 3;
-        ctx.lineCap = "round";
-        ctx.beginPath();
-        ctx.moveTo(fan.x, fan.y);
-        ctx.lineTo(endX, endY);
-        ctx.stroke();
-
-        // Arrow head
-        const headLen = 10;
-        const angle = Math.atan2(fan.dirY, fan.dirX);
-        ctx.beginPath();
-        ctx.moveTo(endX, endY);
-        ctx.lineTo(
-          endX - headLen * Math.cos(angle - 0.4),
-          endY - headLen * Math.sin(angle - 0.4)
-        );
-        ctx.moveTo(endX, endY);
-        ctx.lineTo(
-          endX - headLen * Math.cos(angle + 0.4),
-          endY - headLen * Math.sin(angle + 0.4)
-        );
-        ctx.stroke();
-
-        // Wind effect lines (animated during simulation)
-        if (gameState === "simulating") {
-          const time = Date.now() / 100;
-          ctx.strokeStyle = darkMode ? "rgba(100, 200, 255, 0.3)" : "rgba(0, 100, 200, 0.2)";
-          ctx.lineWidth = 2;
-          for (let i = 0; i < 3; i++) {
-            const offset = ((time + i * 20) % 60);
-            const lineStart = 20 + offset;
-            const lineEnd = lineStart + 15;
-            ctx.beginPath();
-            ctx.moveTo(
-              fan.x + fan.dirX * lineStart,
-              fan.y + fan.dirY * lineStart
-            );
-            ctx.lineTo(
-              fan.x + fan.dirX * lineEnd,
-              fan.y + fan.dirY * lineEnd
-            );
-            ctx.stroke();
-          }
-        }
-      }
-
-      // Draw fan being placed
-      if (placing.isPlacing) {
-        const dx = placing.endX - placing.startX;
-        const dy = placing.endY - placing.startY;
-        const distance = Math.sqrt(dx * dx + dy * dy);
-
-        if (distance > 5) {
-          // Preview circle
-          ctx.fillStyle = darkMode ? "rgba(100, 181, 246, 0.5)" : "rgba(33, 150, 243, 0.5)";
-          ctx.beginPath();
-          ctx.arc(placing.startX, placing.startY, 15, 0, Math.PI * 2);
-          ctx.fill();
-
-          // Preview effect zone
-          ctx.strokeStyle = darkMode ? "rgba(100, 200, 255, 0.2)" : "rgba(0, 100, 200, 0.15)";
-          ctx.setLineDash([5, 5]);
-          ctx.beginPath();
-          ctx.arc(placing.startX, placing.startY, FAN_EFFECT_RADIUS, 0, Math.PI * 2);
-          ctx.stroke();
-          ctx.setLineDash([]);
-
-          // Preview arrow
-          ctx.strokeStyle = darkMode ? "rgba(144, 202, 249, 0.7)" : "rgba(25, 118, 210, 0.7)";
-          ctx.lineWidth = 3;
-          ctx.setLineDash([8, 4]);
-          ctx.beginPath();
-          ctx.moveTo(placing.startX, placing.startY);
-          ctx.lineTo(placing.endX, placing.endY);
-          ctx.stroke();
-          ctx.setLineDash([]);
-
-          // Power indicator
-          const power = Math.min(distance / 150, 1) * 100;
-          ctx.fillStyle = darkMode ? "#fff" : "#333";
-          ctx.font = "14px sans-serif";
-          ctx.textAlign = "center";
-          ctx.fillText(`${Math.round(power)}%`, placing.startX, placing.startY - 25);
-        }
-      }
-
-      // Draw ball start indicator
-      if (gameState === "placing") {
-        ctx.strokeStyle = darkMode ? "rgba(246,173,85,0.5)" : "rgba(237,137,54,0.5)";
+        ctx.strokeStyle = darkMode ? "rgba(100, 200, 255, 0.2)" : "rgba(0, 100, 200, 0.15)";
         ctx.setLineDash([5, 5]);
-        ctx.lineWidth = 2;
         ctx.beginPath();
-        ctx.arc(ballStart.x, ballStart.y, BALL_RADIUS + 10, 0, Math.PI * 2);
+        ctx.arc(placing.startX, placing.startY, FAN_EFFECT_RADIUS, 0, Math.PI * 2);
         ctx.stroke();
         ctx.setLineDash([]);
 
-        ctx.fillStyle = darkMode ? "rgba(255,255,255,0.5)" : "rgba(0,0,0,0.5)";
-        ctx.font = "12px sans-serif";
+        ctx.strokeStyle = darkMode ? "rgba(144, 202, 249, 0.7)" : "rgba(25, 118, 210, 0.7)";
+        ctx.lineWidth = 3;
+        ctx.setLineDash([8, 4]);
+        ctx.beginPath();
+        ctx.moveTo(placing.startX, placing.startY);
+        ctx.lineTo(placing.endX, placing.endY);
+        ctx.stroke();
+        ctx.setLineDash([]);
+
+        ctx.fillStyle = darkMode ? "#fff" : "#333";
+        ctx.font = "14px sans-serif";
         ctx.textAlign = "center";
-        ctx.fillText("Start", ballStart.x, ballStart.y + BALL_RADIUS + 25);
+        ctx.fillText(`${Math.round(Math.min(distance / 150, 1) * 100)}%`, placing.startX, placing.startY - 25);
       }
+    }
 
-      // Draw bucket
-      drawBucket(ctx, bucket, BUCKET_WIDTH, BUCKET_HEIGHT, darkMode, "green");
+    if (gameState === "placing") {
+      drawBallStartMarker(ctx, ballStart.x, ballStart.y, BALL_RADIUS, darkMode, "Start");
+    }
 
-      // Draw ball
-      drawBall(ctx, ball, BALL_RADIUS, darkMode);
+    drawBucket(ctx, bucket, BUCKET_WIDTH, BUCKET_HEIGHT, darkMode, "green");
+    drawBall(ctx, ball, BALL_RADIUS, darkMode);
 
-      // Draw UI
-      ctx.fillStyle = darkMode ? "rgba(255,255,255,0.6)" : "rgba(0,0,0,0.6)";
-      ctx.font = "16px sans-serif";
-      ctx.textAlign = "left";
-
-      if (gameState === "placing") {
-        ctx.fillText("Click and drag to place fans, then start simulation!", 20, 30);
-        ctx.fillText(`Fans placed: ${fans.length}`, 20, 55);
-      } else if (gameState === "simulating") {
-        ctx.fillText("Simulating...", 20, 30);
-      }
-
-      ctx.fillText(`Score: ${score}  |  Level: ${level}`, 20, gameState === "placing" ? 80 : 55);
-
-      animationRef.current = requestAnimationFrame(render);
-    };
-
-    animationRef.current = requestAnimationFrame(render);
-
-    return () => {
-      if (animationRef.current) {
-        cancelAnimationFrame(animationRef.current);
-      }
-    };
+    const lines = gameState === "placing"
+      ? ["Click and drag to place fans, then start simulation!", `Fans placed: ${fans.length}`]
+      : ["Simulating..."];
+    drawGameText(ctx, [...lines, `Score: ${score}  |  Level: ${level}`], darkMode);
   }, [gameState, darkMode, score, level]);
+
+  useGameLoop(canvasRef, render, [gameState, darkMode, score, level], gameState !== "scored");
 
   return (
     <div className={`${styles.container} ${darkMode ? "dark" : ""}`}>
@@ -451,156 +269,36 @@ export default function FanZone() {
 
       <DarkModeToggle darkMode={darkMode} toggleDarkMode={toggleDarkMode} />
 
-      <canvas
+      <GameCanvas
         ref={canvasRef}
-        style={{
-          position: "fixed",
-          top: 0,
-          left: 0,
-          width: "100%",
-          height: "100%",
-          cursor: gameState === "placing" ? "crosshair" : "default",
-        }}
-        onMouseDown={handleMouseDown}
-        onMouseMove={handleMouseMove}
-        onMouseUp={handleMouseUp}
-        onMouseLeave={handleMouseUp}
-        onTouchStart={handleTouchStart}
-        onTouchMove={handleTouchMove}
-        onTouchEnd={handleTouchEnd}
+        onPointerDown={handlePointerDown}
+        onPointerMove={handlePointerMove}
+        onPointerUp={handlePointerUp}
+        cursor={gameState === "placing" ? "crosshair" : "default"}
       />
 
-      {gameState === "placing" && (
-        <div style={{
-          position: "fixed",
-          top: "20px",
-          right: "20px",
-          display: "flex",
-          gap: "0.5rem",
-          zIndex: 10,
-        }}>
-          {fansRef.current.length > 0 && (
-            <button
-              onClick={resetLevel}
-              style={{
-                padding: "0.75rem 1.5rem",
-                fontSize: "1rem",
-                backgroundColor: darkMode ? "#718096" : "#a0aec0",
-                color: "white",
-                border: "none",
-                borderRadius: "10px",
-                cursor: "pointer",
-              }}
-            >
-              Clear Fans
-            </button>
-          )}
-          <button
-            onClick={startSimulation}
-            style={{
-              padding: "1rem 2rem",
-              fontSize: "1.2rem",
-              backgroundColor: darkMode ? "#64b5f6" : "#2196f3",
-              color: "white",
-              border: "none",
-              borderRadius: "10px",
-              cursor: "pointer",
-            }}
-          >
-            Start!
-          </button>
-        </div>
-      )}
+      <ActionButtons visible={gameState === "placing"}>
+        {fansRef.current.length > 0 && (
+          <GameButton onClick={resetLevel} variant="gray" size="medium">Clear Fans</GameButton>
+        )}
+        <GameButton onClick={startSimulation} variant="blue">Start!</GameButton>
+      </ActionButtons>
 
-      {gameState === "simulating" && (
-        <button
-          onClick={resetLevel}
-          style={{
-            position: "fixed",
-            top: "20px",
-            right: "20px",
-            padding: "0.75rem 1.5rem",
-            fontSize: "1rem",
-            backgroundColor: darkMode ? "#718096" : "#a0aec0",
-            color: "white",
-            border: "none",
-            borderRadius: "10px",
-            cursor: "pointer",
-            zIndex: 10,
-          }}
-        >
-          Reset
-        </button>
-      )}
+      <ActionButtons visible={gameState === "simulating"}>
+        <GameButton onClick={resetLevel} variant="gray" size="medium">Reset</GameButton>
+      </ActionButtons>
 
-      {gameState === "scored" && (
-        <div style={{
-          position: "fixed",
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          backgroundColor: "rgba(39, 174, 96, 0.9)",
-          display: "flex",
-          flexDirection: "column",
-          justifyContent: "center",
-          alignItems: "center",
-          zIndex: 10,
-        }}>
-          <h1 style={{ fontSize: "3rem", color: "white", marginBottom: "1rem" }}>
-            Nice!
-          </h1>
-          <p style={{ color: "white", fontSize: "1.5rem", marginBottom: "0.5rem" }}>
-            Fans used: {fansRef.current.length}
-          </p>
-          <p style={{ color: "white", fontSize: "1.2rem", marginBottom: "2rem", opacity: 0.8 }}>
-            Score: {score} | Level: {level}
-          </p>
-          <div style={{ display: "flex", gap: "1rem" }}>
-            <button
-              onClick={nextLevel}
-              style={{
-                padding: "1rem 2rem",
-                fontSize: "1.2rem",
-                backgroundColor: "#2d7a4a",
-                color: "white",
-                border: "none",
-                borderRadius: "10px",
-                cursor: "pointer",
-              }}
-            >
-              Next Level
-            </button>
-            <Link
-              href="/games"
-              style={{
-                padding: "1rem 2rem",
-                fontSize: "1.2rem",
-                backgroundColor: "#718096",
-                color: "white",
-                borderRadius: "10px",
-                textDecoration: "none",
-              }}
-            >
-              Back to Games
-            </Link>
-          </div>
-        </div>
-      )}
+      <ResultOverlay
+        show={gameState === "scored"}
+        success={true}
+        title="Nice!"
+        stats={`Fans used: ${fansRef.current.length} | Score: ${score} | Level: ${level}`}
+        primaryAction={nextLevel}
+        primaryLabel="Next Level"
+        darkMode={darkMode}
+      />
 
-      <Link
-        href="/games"
-        style={{
-          position: "fixed",
-          bottom: "10px",
-          left: "20px",
-          color: darkMode ? "rgba(255,255,255,0.5)" : "rgba(0,0,0,0.5)",
-          textDecoration: "underline",
-          zIndex: 5,
-        }}
-      >
-        &larr; Back to Games
-      </Link>
+      <BackToGamesLink darkMode={darkMode} />
     </div>
   );
 }

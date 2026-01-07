@@ -44,7 +44,7 @@ export const content = {
       dates: "June 2022 - Present",
       responsibilities: [
         "Working to innovate and improve access to mental healthcare through technology.",
-        "Implementing A/B testing framework and working with business intelligence team to decrease patient acquisition cost by 12.4% in 2024.",
+        "Implementing A/B testing framework and working with business intelligence team to increase intake conversion by 51% and decrease patient acquisition cost by 12.4% in 2024.",
         "Collaborating cross-functionally with psychiatrists and product teams to create tools that enhance patient care and streamline clinical workflows increasing efficiency by ~22%.",
         "Supporting automated testing and continuous integration to ensure reliable software delivery, decreasing bug rate by 17%.",
         "Mentoring junior developers through extensive pair programming and code reviews.",

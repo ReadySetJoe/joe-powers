@@ -47,8 +47,38 @@ export default function Home() {
   return (
     <div className={`${styles.container} ${darkMode ? "dark" : ""}`}>
       <Head>
-        <title>joepowers.dev</title>
+        <title>Joe Powers | Full-Stack Developer</title>
+        <meta
+          name="description"
+          content="Joe Powers is a full-stack developer specializing in React, Node.js, and modern web technologies. View projects, resume, and more."
+        />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
         <link rel="icon" href="/confused-emote-no-bkgd.png" />
+
+        {/* Open Graph */}
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content="https://joepowers.dev/" />
+        <meta property="og:title" content="Joe Powers | Full-Stack Developer" />
+        <meta
+          property="og:description"
+          content="Joe Powers is a full-stack developer specializing in React, Node.js, and modern web technologies. View projects, resume, and more."
+        />
+        <meta
+          property="og:image"
+          content="https://joepowers.dev/confused-emote-no-bkgd.png"
+        />
+
+        {/* Twitter */}
+        <meta name="twitter:card" content="summary" />
+        <meta name="twitter:title" content="Joe Powers | Full-Stack Developer" />
+        <meta
+          name="twitter:description"
+          content="Joe Powers is a full-stack developer specializing in React, Node.js, and modern web technologies."
+        />
+        <meta
+          name="twitter:image"
+          content="https://joepowers.dev/confused-emote-no-bkgd.png"
+        />
       </Head>
       <main>
         <DarkModeToggle darkMode={darkMode} toggleDarkMode={toggleDarkMode} />

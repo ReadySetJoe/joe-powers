@@ -9,13 +9,10 @@
 }
 
 /* Dark mode variables */
-:global(.dark) {
+.dark {
   --background-color: #333;
   --border-color: #555;
   --hover-background-color: #444;
-}
-
-.dark {
   --foreground-rgb: 255, 255, 255;
   --background-start-rgb: 0, 0, 0;
   --background-end-rgb: 0, 0, 0;

@@ -5,12 +5,24 @@ import {
   GraduationCap,
   User,
 } from "lucide-react";
+import Head from "next/head";
 import React from "react";
 import { content } from "../components/resume/content";
 
 const ResumePage = () => {
   return (
-    <div className="max-w-[8.5in] mx-auto p-5 bg-white text-gray-800">
+    <>
+      <Head>
+        <title>One Page Resume | Joe Powers</title>
+        <meta
+          name="description"
+          content="Printable one-page resume of Joe Powers, Senior Software Engineer."
+        />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <link rel="icon" href="/confused-emote-no-bkgd.png" />
+        <meta name="robots" content="noindex" />
+      </Head>
+      <div className="max-w-[8.5in] mx-auto p-5 bg-white text-gray-800">
       <header className="mb-3">
         <h1 className="text-2xl font-bold mb-1 text-indigo-700">Joe Powers</h1>
         <h2 className="text-lg text-gray-600 mb-1">Senior Software Engineer</h2>
@@ -162,6 +174,7 @@ const ResumePage = () => {
       {content.secret.message}
       {content.secret.style}
     </div>
+    </>
   );
 };
 

@@ -5,12 +5,46 @@ import {
   GraduationCap,
   User,
 } from "lucide-react";
+import Head from "next/head";
 import React from "react";
 import { content } from "../components/resume/content";
 
 const ResumePage = () => {
   return (
-    <div className="max-w-4xl mx-auto p-4 sm:p-8 bg-gradient-to-br from-blue-50 to-indigo-100 text-gray-800 shadow-xl rounded-lg">
+    <>
+      <Head>
+        <title>Resume | Joe Powers - Senior Software Engineer</title>
+        <meta
+          name="description"
+          content="Resume of Joe Powers, a Senior Software Engineer with expertise in React, TypeScript, Node.js, and cloud technologies."
+        />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <link rel="icon" href="/confused-emote-no-bkgd.png" />
+
+        {/* Open Graph */}
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content="https://joepowers.dev/resume" />
+        <meta
+          property="og:title"
+          content="Resume | Joe Powers - Senior Software Engineer"
+        />
+        <meta
+          property="og:description"
+          content="Resume of Joe Powers, a Senior Software Engineer with expertise in React, TypeScript, Node.js, and cloud technologies."
+        />
+
+        {/* Twitter */}
+        <meta name="twitter:card" content="summary" />
+        <meta
+          name="twitter:title"
+          content="Resume | Joe Powers - Senior Software Engineer"
+        />
+        <meta
+          name="twitter:description"
+          content="Resume of Joe Powers, a Senior Software Engineer with expertise in React, TypeScript, Node.js, and cloud technologies."
+        />
+      </Head>
+      <div className="max-w-4xl mx-auto p-4 sm:p-8 bg-gradient-to-br from-blue-50 to-indigo-100 text-gray-800 shadow-xl rounded-lg">
       <header className="mb-6 sm:mb-8 bg-white p-4 sm:p-6 rounded-lg shadow-md">
         <h1 className="text-3xl sm:text-4xl font-bold mb-2 text-indigo-700">
           Joe Powers
@@ -195,6 +229,7 @@ const ResumePage = () => {
       {content.secret.message}
       {content.secret.style}
     </div>
+    </>
   );
 };
 

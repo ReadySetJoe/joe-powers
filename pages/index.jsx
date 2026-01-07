@@ -130,10 +130,10 @@ export default function Home() {
             <h3>Resume</h3>
             <p>For the professional types.</p>
           </a>
-          <a href="/games" className={styles.card} style={{ width: "100%" }}>
+          <Link href="/games" className={styles.card} style={{ width: "100%" }}>
             <h3>Games</h3>
             <p>For the fun types.</p>
-          </a>
+          </Link>
         </div>
         <p className={styles.description}>
           One day I&apos;m gonna do some{" "}
@@ -161,21 +161,7 @@ export default function Home() {
         <p className={styles.description}>For now, here are some projects:</p>
         <div className={styles.grid}>
           <a
-            href="https://steamboilerroom.com/"
-            className={styles.card}
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <h3>The Boiler Room</h3>
-            <p>A collection of steam utilities.</p>
-            <br />
-            <p>
-              For gamers. By gamer. <br />
-              ...it&apos;s me, I&apos;m the gamer.
-            </p>
-          </a>
-          <a
-            href="https://branch-out-gvl.herokuapp.com/"
+            href="https://branchout.live"
             className={styles.card}
             target="_blank"
             rel="noopener noreferrer"
@@ -199,18 +185,32 @@ export default function Home() {
             </p>
           </a>
           <a
-            href="https://main.d3oydlksdz52ep.amplifyapp.com/stats"
+            href="https://slp-parser.vercel.app/"
             className={styles.card}
             target="_blank"
             rel="noopener noreferrer"
           >
             <h3>Slippi Stats</h3>
             <p>
-              A half-baked project based on parsing online melee slippi replay
-              files.
+              Parse your Super Smash Bros. Melee Slippi replays right in your
+              browser.
             </p>
             <br />
             <p>Niche like a quiche.</p>
+          </a>
+          <a
+            href="https://steamboilerroom.com/"
+            className={styles.card}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <h3>The Boiler Room</h3>
+            <p>A collection of steam utilities.</p>
+            <br />
+            <p>
+              For gamers. By gamer. <br />
+              ...it&apos;s me, I&apos;m the gamer.
+            </p>
           </a>
         </div>
 

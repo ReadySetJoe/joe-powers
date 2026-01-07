@@ -4,6 +4,7 @@ import Image from "next/image";
 import { useEffect, useState } from "react";
 import DarkModeToggle from "../components/dark-mode-toggle";
 import styles from "../styles/Home.module.css";
+import Link from "next/link";
 
 const filter = new Filter();
 
@@ -70,7 +71,10 @@ export default function Home() {
 
         {/* Twitter */}
         <meta name="twitter:card" content="summary" />
-        <meta name="twitter:title" content="Joe Powers | Full-Stack Developer" />
+        <meta
+          name="twitter:title"
+          content="Joe Powers | Full-Stack Developer"
+        />
         <meta
           name="twitter:description"
           content="Joe Powers is a full-stack developer specializing in React, Node.js, and modern web technologies."
@@ -83,7 +87,7 @@ export default function Home() {
       <main>
         <DarkModeToggle darkMode={darkMode} toggleDarkMode={toggleDarkMode} />
         <h1 className={styles.title}>
-          Welcome to <a href="/">here.</a>
+          Welcome to <Link href="/">here.</Link>
         </h1>
         <div
           style={{
@@ -94,7 +98,7 @@ export default function Home() {
           }}
         >
           <p className={styles.description}>
-            I'm Joe Powers, a full-stack developer. This is me:
+            I&apos;m Joe Powers, a full-stack developer. This is me:
           </p>
           <Image
             src="/confused-emote-no-bkgd.png"
@@ -106,18 +110,33 @@ export default function Home() {
             height={50}
           />
         </div>
-        <a
-          href="/resume"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-          style={{ marginBottom: "60px" }}
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            justifyContent: "center",
+            alignItems: "center",
+            marginTop: "20px",
+            marginBottom: "40px",
+          }}
         >
-          <h3>Resume</h3>
-          <p>For the professional types.</p>
-        </a>
+          <a
+            href="/resume"
+            className={styles.card}
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{ width: "100%" }}
+          >
+            <h3>Resume</h3>
+            <p>For the professional types.</p>
+          </a>
+          <a href="/games" className={styles.card} style={{ width: "100%" }}>
+            <h3>Games</h3>
+            <p>For the fun types.</p>
+          </a>
+        </div>
         <p className={styles.description}>
-          One day I'm gonna do some{" "}
+          One day I&apos;m gonna do some{" "}
           <code style={{ color: "black" }}>
             <input
               type="text"
@@ -152,7 +171,7 @@ export default function Home() {
             <br />
             <p>
               For gamers. By gamer. <br />
-              ...it's me, I'm the gamer.
+              ...it&apos;s me, I&apos;m the gamer.
             </p>
           </a>
           <a

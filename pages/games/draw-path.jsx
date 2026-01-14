@@ -1,5 +1,5 @@
 import Head from "next/head";
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import DarkModeToggle from "../../components/dark-mode-toggle";
 import { BackToGamesLink, GameCanvas, ResultOverlay, ActionButton } from "../../components/game";
 import styles from "../../styles/Home.module.css";
@@ -56,7 +56,9 @@ export default function DrawPath() {
     setGameState("drawing");
   }, [round]);
 
-  useState(() => initializeRound());
+  useEffect(() => {
+    initializeRound();
+  }, []);
 
   const getPathLength = useCallback(() => {
     const path = pathRef.current;

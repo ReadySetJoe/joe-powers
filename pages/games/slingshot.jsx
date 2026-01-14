@@ -1,5 +1,5 @@
 import Head from "next/head";
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import DarkModeToggle from "../../components/dark-mode-toggle";
 import { BackToGamesLink, GameCanvas, ResultOverlay } from "../../components/game";
 import styles from "../../styles/Home.module.css";
@@ -53,7 +53,9 @@ export default function Slingshot() {
     setGameState("aiming");
   }, []);
 
-  useState(() => initializeGame());
+  useEffect(() => {
+    initializeGame();
+  }, []);
 
   const handlePointerDown = useCallback((e) => {
     if (gameState !== "aiming") return;

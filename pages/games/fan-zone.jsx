@@ -1,5 +1,5 @@
 import Head from "next/head";
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import DarkModeToggle from "../../components/dark-mode-toggle";
 import { BackToGamesLink, GameCanvas, ResultOverlay, ActionButtons, GameButton } from "../../components/game";
 import styles from "../../styles/Home.module.css";
@@ -73,7 +73,9 @@ export default function FanZone() {
     setGameState("placing");
   }, []);
 
-  useState(() => generateLevel(level));
+  useEffect(() => {
+    generateLevel(level);
+  }, []);
 
   const handlePointerDown = useCallback((e) => {
     if (gameState !== "placing") return;
